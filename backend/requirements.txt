@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+anthropic
+sqlalchemy
+pydantic
+python-jose[cryptography]
+passlib[bcrypt]
+scikit-learn
+numpy
+pandas
+joblib
+python-dotenv
+python-multipart
+rapidfuzz
