@@ -16,29 +16,35 @@ for col in df.columns:
 
 df = df.replace('nan', np.nan)
 
-# Build deduplicated 131-symptom master list
+# Build deduplicated 131-symptom master list (optimized)
 raw_syms = sev['Symptom'].str.strip().tolist()
-seen = set()
-symptom_list = []
-
-for s in raw_syms:
-    if s not in seen and s != 'prognosis':
-        seen.add(s)
-        symptom_list.append(s)
+# Remove duplicates while preserving order
+symptom_list = list(dict.fromkeys(
+    s for s in raw_syms if s and s.lower() != 'prognosis'
+))
+logger.info(f'Built symptom list: {len(symptom_list)} unique symptoms')
 
 # Build binary feature matrix (4920 rows x 131 cols)
 X = pd.DataFrame(0, index=df.index, columns=symptom_list)
 
-for col in df.columns[1:]:
-    for idx, val in df[col].items():
-        if pd.notna(val) and str(val) != 'nan' and val in symptom_list:
-            X.loc[idx, val] = 1
+# Build binary feature matrix (4920 rows x 131 cols) - vectorized
+X = pd.DataFrame(0, index=df.index, columns=symptom_list, dtype=np.uint8)
 
-y = df['Disease'].str.strip()
+# Vectorized approach instead of nested loops
+for col in df.columns[1:]:
+    mask = df[col].notna() & (df[col] != 'nan')
+    valid_symptoms = df.loc[mask, col]
+    valid_symptoms = valid_symptoms[valid_symptoms.isin(symptom_list)]
+    X.loc[valid_symptoms.index, valid_symptoms.values] = 1
+
+logger.info(f'Feature matrix shape: {X.shape}')
 le = LabelEncoder()
 y_enc = le.fit_transform(y)
 
-X_train, X_test, y_train, y_test = train_test_split(
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import classification_report
+
+logger.info(f'Train set: {X_train.shape}, Test set: {X_test.shape}')
     X, y_enc, test_size=0.2, random_state=42, stratify=y_enc
 )
 
