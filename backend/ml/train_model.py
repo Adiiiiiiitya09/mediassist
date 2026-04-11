@@ -9,8 +9,6 @@ from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
-import warnings
-warnings.filterwarnings('ignore')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
