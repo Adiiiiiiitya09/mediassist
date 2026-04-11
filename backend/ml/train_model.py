@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 
 # Define data paths
 DATA_DIR = Path('data')
-MODEL_DIR = Path('models')
-MODEL_DIR.mkdir(exist_ok=True)
+MODEL_DIR = Path(__file__).resolve().parent
+MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
 try:
     df = pd.read_csv(DATA_DIR / 'dataset.csv')
