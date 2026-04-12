@@ -1,6 +1,7 @@
 fastapi
 uvicorn[standard]
-anthropos
+anthropic
+groq
 pydantic
 scikit-learn
 numpy
@@ -10,3 +11,4 @@ python-dotenv
 python-multipart
 rapidfuzz
 firebase-admin
+sqlalchemy

@@ -30,8 +30,8 @@ class UserRegister(BaseModel):
     role: str
 
 class UserLogin(BaseModel):
-    email: str
-    password: str
+    email: Optional[str] = None
+    password: Optional[str] = None
     firebase_token: Optional[str] = None
 
 class TokenResponse(BaseModel):

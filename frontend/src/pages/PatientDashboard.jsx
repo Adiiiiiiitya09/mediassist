@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { auth } from "../firebase";
 
 const API = "http://localhost:8000";
 
@@ -353,7 +354,22 @@ export default function PatientDashboard() {
       return;
     }
 
-    load();
+    // Refresh token from Firebase Auth to prevent session expiry
+    const refreshToken = async () => {
+      try {
+        if (auth.currentUser) {
+          const freshToken = await auth.currentUser.getIdToken(true);
+          localStorage.setItem('token', freshToken);
+        }
+      } catch (err) {
+        console.error('Token refresh failed:', err);
+        window.location.href = "/patient-login";
+        return;
+      }
+      load();
+    };
+
+    refreshToken();
   }, []);
 
   useEffect(() => {
