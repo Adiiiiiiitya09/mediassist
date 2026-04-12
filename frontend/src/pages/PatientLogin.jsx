@@ -194,7 +194,12 @@ export default function PatientLogin() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center py-8">
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-8">
+            <div className="mb-6 flex items-center justify-center gap-3">
+                <span className="text-3xl">🏥</span>
+                <a href="/" className="text-3xl font-bold text-gray-900 no-underline hover:text-blue-700 transition">MediAssist</a>
+            </div>
+            
             <div className="bg-white border border-gray-200 rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                 <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
                     {isRegister ? 'Patient Registration' : 'Patient Login'}

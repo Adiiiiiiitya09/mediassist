@@ -7,13 +7,21 @@ const api = axios.create({
 
 // Attach Firebase ID token to every request automatically
 api.interceptors.request.use(async config => {
+    let tokenSet = false
     if (auth.currentUser) {
         try {
             const idToken = await auth.currentUser.getIdToken()
             config.headers.Authorization = `Bearer ${idToken}`
+            localStorage.setItem('token', idToken)
+            tokenSet = true
         } catch (error) {
             console.error('Error getting Firebase ID token:', error)
         }
+    }
+    
+    if (!tokenSet) {
+        const token = localStorage.getItem('token')
+        if (token) config.headers.Authorization = `Bearer ${token}`
     }
     return config
 })

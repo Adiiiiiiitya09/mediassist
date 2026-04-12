@@ -55,6 +55,25 @@ const Section = ({ title, children }) => (
 );
 
 // ── PROFILE EDITOR ───────────────────────────────────────────
+const inputStyle = {
+  width: "100%", padding: "8px 12px", border: "1px solid #e5e7eb",
+  borderRadius: 8, fontSize: 14, color: "#111827", background: "#fff", boxSizing: "border-box",
+};
+
+const Field = ({ label, k, type = "text", options, form, set }) => (
+  <div style={{ marginBottom: 14 }}>
+    <label style={{ display: "block", fontSize: 12, color: "#6b7280", marginBottom: 4 }}>{label}</label>
+    {options ? (
+      <select value={form[k] ?? ""} onChange={(e) => set(k, e.target.value)} style={inputStyle}>
+        <option value="">— select —</option>
+        {options.map((o) => <option key={o}>{o}</option>)}
+      </select>
+    ) : (
+      <input type={type} value={form[k] ?? ""} onChange={(e) => set(k, e.target.value)} style={inputStyle} />
+    )}
+  </div>
+);
+
 function ProfileEditor({ profile, onSave, onClose }) {
   const [form, setForm] = useState({ ...profile });
   const [saving, setSaving] = useState(false);
@@ -76,20 +95,6 @@ function ProfileEditor({ profile, onSave, onClose }) {
     }
   };
 
-  const Field = ({ label, k, type = "text", options }) => (
-    <div style={{ marginBottom: 14 }}>
-      <label style={{ display: "block", fontSize: 12, color: "#6b7280", marginBottom: 4 }}>{label}</label>
-      {options ? (
-        <select value={form[k] ?? ""} onChange={(e) => set(k, e.target.value)} style={inputStyle}>
-          <option value="">— select —</option>
-          {options.map((o) => <option key={o}>{o}</option>)}
-        </select>
-      ) : (
-        <input type={type} value={form[k] ?? ""} onChange={(e) => set(k, e.target.value)} style={inputStyle} />
-      )}
-    </div>
-  );
-
   const inputStyle = {
     width: "100%", padding: "8px 12px", border: "1px solid #e5e7eb",
     borderRadius: 8, fontSize: 14, color: "#111827", background: "#fff", boxSizing: "border-box",
@@ -102,14 +107,14 @@ function ProfileEditor({ profile, onSave, onClose }) {
         <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 24, color: "#111827" }}>Edit Medical Profile</h2>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }}>
-          <Field label="Age" k="age" type="number" />
-          <Field label="Gender" k="gender" options={["male", "female", "other"]} />
-          <Field label="Blood Group" k="blood_group" options={["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]} />
-          <Field label="Height (cm)" k="height_cm" type="number" />
-          <Field label="Weight (kg)" k="weight_kg" type="number" />
-          <Field label="Smoking" k="smoking" options={["never", "former", "current"]} />
-          <Field label="Alcohol" k="alcohol" options={["never", "occasional", "regular"]} />
-          <Field label="Exercise" k="exercise" options={["sedentary", "moderate", "active"]} />
+          <Field label="Age" k="age" type="number" form={form} set={set} />
+          <Field label="Gender" k="gender" options={["male", "female", "other"]} form={form} set={set} />
+          <Field label="Blood Group" k="blood_group" options={["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]} form={form} set={set} />
+          <Field label="Height (cm)" k="height_cm" type="number" form={form} set={set} />
+          <Field label="Weight (kg)" k="weight_kg" type="number" form={form} set={set} />
+          <Field label="Smoking" k="smoking" options={["never", "former", "current"]} form={form} set={set} />
+          <Field label="Alcohol" k="alcohol" options={["never", "occasional", "regular"]} form={form} set={set} />
+          <Field label="Exercise" k="exercise" options={["sedentary", "moderate", "active"]} form={form} set={set} />
         </div>
 
         <div style={{ marginBottom: 14 }}>
@@ -143,8 +148,8 @@ function ProfileEditor({ profile, onSave, onClose }) {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }}>
-          <Field label="Emergency Contact Name" k="emergency_contact_name" />
-          <Field label="Emergency Contact Phone" k="emergency_contact_phone" />
+          <Field label="Emergency Contact Name" k="emergency_contact_name" form={form} set={set} />
+          <Field label="Emergency Contact Phone" k="emergency_contact_phone" form={form} set={set} />
         </div>
 
         {msg && <p style={{ color: msg === "Saved!" ? "#16a34a" : "#dc2626", fontSize: 13, marginTop: 8 }}>{msg}</p>}
@@ -448,7 +453,7 @@ export default function PatientDashboard() {
       <div style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "0 32px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 20 }}>🏥</span>
-          <span style={{ fontWeight: 700, fontSize: 18, color: "#111827" }}>MediAssist</span>
+          <a href="/" onClick={() => localStorage.removeItem("token")} style={{ fontWeight: 700, fontSize: 18, color: "#111827", textDecoration: 'none' }}>MediAssist</a>
           <span style={{ color: "#d1d5db", marginLeft: 8 }}>|</span>
           <span style={{ fontSize: 14, color: "#6b7280", marginLeft: 8 }}>Patient Portal</span>
         </div>
@@ -559,7 +564,7 @@ export default function PatientDashboard() {
                       onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = "#e5e7eb"; }}>
 
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                        <div style={{ flex: 1, cursor: "pointer" }} onClick={() => openCase(c.consultation_id)}>
+                        <div style={{ flex: 1, cursor: "pointer" }} onClick={() => c.interview_complete ? openCase(c.consultation_id) : window.location.href = `/patient/consultation?continue=${c.consultation_id}`}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
                             <p style={{ fontWeight: 700, fontSize: 15, color: "#111827" }}>{c.chief_complaint}</p>
                             <Badge status={c.status} />
@@ -615,7 +620,7 @@ export default function PatientDashboard() {
                                 minWidth: 140
                               }}>
                                 <button
-                                  onClick={(e) => { e.stopPropagation(); openCase(c.consultation_id); setActionMenuOpen(null); }}
+                                  onClick={(e) => { e.stopPropagation(); c.interview_complete ? openCase(c.consultation_id) : window.location.href = `/patient/consultation?continue=${c.consultation_id}`; setActionMenuOpen(null); }}
                                   style={{
                                     width: "100%",
                                     padding: "8px 12px",

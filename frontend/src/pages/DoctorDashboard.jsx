@@ -9,6 +9,24 @@ const tierBg = (tier) =>
     ({ High: '#d1fae5', Medium: '#fef3c7', Low: '#fee2e2' }[tier] ?? '#f3f4f6')
 
 // ── Profile Editor Modal ──────────────────────────────────────
+const inp = {
+    width: '100%', padding: '8px 12px', border: '1px solid #e5e7eb',
+    borderRadius: 8, fontSize: 14, color: '#111827', background: '#fff',
+    boxSizing: 'border-box', marginBottom: 14,
+}
+
+const Field = ({ label, k, type = 'text', options, form, set }) => (
+    <div>
+        <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 4 }}>{label}</label>
+        {options
+            ? <select value={form[k] ?? ''} onChange={e => set(k, e.target.value)} style={inp}>
+                <option value=''>— select —</option>
+                {options.map(o => <option key={o}>{o}</option>)}
+            </select>
+            : <input type={type} value={form[k] ?? ''} onChange={e => set(k, e.target.value)} style={inp} />}
+    </div>
+)
+
 function ProfileEditor({ profile, onSave, onClose }) {
     const [form, setForm] = useState({ ...profile })
     const [saving, setSaving] = useState(false)
@@ -30,23 +48,7 @@ function ProfileEditor({ profile, onSave, onClose }) {
         }
     }
 
-    const inp = {
-        width: '100%', padding: '8px 12px', border: '1px solid #e5e7eb',
-        borderRadius: 8, fontSize: 14, color: '#111827', background: '#fff',
-        boxSizing: 'border-box', marginBottom: 14,
-    }
 
-    const Field = ({ label, k, type = 'text', options }) => (
-        <div>
-            <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 4 }}>{label}</label>
-            {options
-                ? <select value={form[k] ?? ''} onChange={e => set(k, e.target.value)} style={inp}>
-                    <option value=''>— select —</option>
-                    {options.map(o => <option key={o}>{o}</option>)}
-                </select>
-                : <input type={type} value={form[k] ?? ''} onChange={e => set(k, e.target.value)} style={inp} />}
-        </div>
-    )
 
     return (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -55,15 +57,15 @@ function ProfileEditor({ profile, onSave, onClose }) {
                 <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 24, color: '#111827' }}>Edit Professional Profile</h2>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
-                    <Field label='Specialization' k='specialization' options={['General Physician', 'Cardiologist', 'Dermatologist', 'Neurologist', 'Orthopedic', 'Pediatrician', 'Psychiatrist', 'Pulmonologist', 'Gastroenterologist', 'ENT Specialist', 'Ophthalmologist', 'Other']} />
-                    <Field label='Qualification' k='qualification' />
-                    <Field label='Experience (years)' k='experience_years' type='number' />
-                    <Field label='License Number' k='license_number' />
-                    <Field label='Hospital / Clinic' k='hospital' />
-                    <Field label='Department' k='department' />
-                    <Field label='Phone' k='phone' />
-                    <Field label='Consultation Hours' k='consultation_hours' />
-                    <Field label='Languages Spoken' k='languages' />
+                    <Field label='Specialization' k='specialization' options={['General Physician', 'Cardiologist', 'Dermatologist', 'Neurologist', 'Orthopedic', 'Pediatrician', 'Psychiatrist', 'Pulmonologist', 'Gastroenterologist', 'ENT Specialist', 'Ophthalmologist', 'Other']} form={form} set={set} />
+                    <Field label='Qualification' k='qualification' form={form} set={set} />
+                    <Field label='Experience (years)' k='experience_years' type='number' form={form} set={set} />
+                    <Field label='License Number' k='license_number' form={form} set={set} />
+                    <Field label='Hospital / Clinic' k='hospital' form={form} set={set} />
+                    <Field label='Department' k='department' form={form} set={set} />
+                    <Field label='Phone' k='phone' form={form} set={set} />
+                    <Field label='Consultation Hours' k='consultation_hours' form={form} set={set} />
+                    <Field label='Languages Spoken' k='languages' form={form} set={set} />
                 </div>
 
                 <div>
@@ -234,7 +236,7 @@ export default function DoctorDashboard() {
     const handleApprove = async () => {
         if (!notes.trim()) { alert('Please add doctor notes before approving.'); return }
         try {
-            await api.post(`/doctor/approve/${selectedConsult.id}`, { notes, prescription })
+            await api.post(`/doctor/approve/${selectedConsult.consultation_id}`, { notes, prescription })
             setActionDone(true)
             fetchPending()
         } catch (e) { console.error(e) }
@@ -243,7 +245,7 @@ export default function DoctorDashboard() {
     const handleReject = async () => {
         if (!notes.trim()) { alert('Please add a reason before rejecting.'); return }
         try {
-            await api.post(`/doctor/reject/${selectedConsult.id}`, { notes })
+            await api.post(`/doctor/reject/${selectedConsult.consultation_id}`, { notes })
             setActionDone(true)
             fetchPending()
         } catch (e) { console.error(e) }
@@ -258,7 +260,7 @@ export default function DoctorDashboard() {
             <div style={{ background: '#1d4ed8', padding: '0 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 58 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span style={{ fontSize: 20 }}>🏥</span>
-                    <span style={{ fontWeight: 700, fontSize: 17, color: '#fff' }}>MediAssist</span>
+                    <a href="/" onClick={() => localStorage.removeItem("token")} style={{ fontWeight: 700, fontSize: 17, color: '#fff', textDecoration: 'none' }}>MediAssist</a>
                     <span style={{ color: '#93c5fd', marginLeft: 8, fontSize: 14 }}>Doctor Portal</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -272,6 +274,10 @@ export default function DoctorDashboard() {
                     <button onClick={() => setShowProfileEditor(true)}
                         style={{ padding: '6px 14px', background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, color: '#fff', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
                         Edit Profile
+                    </button>
+                    <button onClick={() => { localStorage.removeItem("token"); window.location.href = "/doctor-login"; }}
+                        style={{ padding: '6px 14px', background: '#dc2626', border: 'none', borderRadius: 6, color: '#fff', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
+                        Logout
                     </button>
                 </div>
             </div>
@@ -327,18 +333,18 @@ export default function DoctorDashboard() {
                             </div>
                         ) : (
                             consultations.map(c => (
-                                <div key={c.id} onClick={() => loadDetail(c.id)}
-                                    style={{ padding: '12px 14px', borderRadius: 10, border: `1px solid ${selectedConsult?.id === c.id ? '#93c5fd' : '#e5e7eb'}`, background: selectedConsult?.id === c.id ? '#eff6ff' : '#fff', marginBottom: 8, cursor: 'pointer', transition: 'all 0.15s' }}
-                                    onMouseEnter={e => { if (selectedConsult?.id !== c.id) e.currentTarget.style.background = '#f9fafb' }}
-                                    onMouseLeave={e => { if (selectedConsult?.id !== c.id) e.currentTarget.style.background = '#fff' }}>
+                                <div key={c.consultation_id} onClick={() => loadDetail(c.consultation_id)}
+                                    style={{ padding: '12px 14px', borderRadius: 10, border: `1px solid ${selectedConsult?.id === c.consultation_id ? '#93c5fd' : '#e5e7eb'}`, background: selectedConsult?.id === c.consultation_id ? '#eff6ff' : '#fff', marginBottom: 8, cursor: 'pointer', transition: 'all 0.15s' }}
+                                    onMouseEnter={e => { if (selectedConsult?.id !== c.consultation_id) e.currentTarget.style.background = '#f9fafb' }}
+                                    onMouseLeave={e => { if (selectedConsult?.id !== c.consultation_id) e.currentTarget.style.background = '#fff' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                                         <p style={{ fontWeight: 600, fontSize: 13, color: '#111827' }}>{c.patient_name}</p>
-                                        <span style={{ fontSize: 11, fontWeight: 700, color: tierColor(c.urgency), background: tierBg(c.urgency), padding: '2px 8px', borderRadius: 20 }}>
-                                            {c.urgency}
+                                        <span style={{ fontSize: 11, fontWeight: 700, color: tierColor(c.confidence_tier), background: tierBg(c.confidence_tier), padding: '2px 8px', borderRadius: 20 }}>
+                                            {c.confidence_tier}
                                         </span>
                                     </div>
                                     <p style={{ fontSize: 11, color: '#9ca3af' }}>
-                                        {new Date(c.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                        {c.created_at ? new Date(c.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Invalid Date'}
                                     </p>
                                 </div>
                             ))

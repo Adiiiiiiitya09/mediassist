@@ -9,6 +9,13 @@ export default function PatientConsultation() {
     const [loading, setLoading] = useState(false)
     const [isComplete, setIsComplete] = useState(false)
     const messagesEndRef = useRef(null)
+    const inputRef = useRef(null)
+
+    useEffect(() => {
+        if (!loading && inputRef.current) {
+            inputRef.current.focus()
+        }
+    }, [loading])
 
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search)
@@ -17,15 +24,25 @@ export default function PatientConsultation() {
         const startConsultation = async () => {
             try {
                 if (continueId) {
-                    // Load existing consultation for reconsult
                     setConsultationId(parseInt(continueId))
-                    // Load existing messages
-                    const historyResponse = await api.get(`/consultation/status/${continueId}`)
-                    // For reconsult, we start fresh but could load previous context if needed
-                    setMessages([{
-                        role: 'assistant',
-                        content: 'Welcome back! I see you\'re following up on a previous consultation. Let\'s update your symptoms and medical information. What changes have you noticed since your last visit?'
-                    }])
+                    try {
+                        const reportResponse = await api.get(`/consultation/report/${continueId}`)
+                        if (reportResponse.data && reportResponse.data.transcript && reportResponse.data.transcript.length > 0) {
+                            setMessages(reportResponse.data.transcript)
+                        } else {
+                            setMessages([{
+                                role: 'assistant',
+                                content: 'Welcome back! I see you\'re following up on a previous consultation. Let\'s update your symptoms. What changes have you noticed since your last visit?'
+                            }])
+                        }
+                        
+                        const statusResponse = await api.get(`/consultation/status/${continueId}`)
+                        if (statusResponse.data.interview_complete) {
+                            setIsComplete(true)
+                        }
+                    } catch(err) {
+                        console.error('Failed to load consultation state:', err)
+                    }
                 } else {
                     // Start new consultation
                     const response = await api.post('/consultation/start')
@@ -70,7 +87,8 @@ export default function PatientConsultation() {
                 setIsComplete(true)
             }
         } catch (err) {
-            console.error(err)
+            console.error('Message error:', err)
+            setMessages(prev => [...prev, { role: 'assistant', content: '❌ Error: Unable to process message. Please try again.' }])
         } finally {
             setLoading(false)
         }
@@ -80,7 +98,12 @@ export default function PatientConsultation() {
         <div className="min-h-screen bg-gray-50 flex flex-col">
             <div className="bg-blue-700 text-white p-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Patient Consultation</h1>
+                    <div className="flex items-center gap-3">
+                        <span className="text-2xl">🏥</span>
+                        <a href="/" onClick={() => localStorage.removeItem("token")} className="text-xl font-bold text-white no-underline">MediAssist</a>
+                        <span className="text-blue-300">|</span>
+                        <h1 className="text-lg font-semibold">Patient Consultation</h1>
+                    </div>
                     <button
                         onClick={() => window.location.href = '/dashboard'}
                         className="bg-white text-blue-700 px-4 py-2 rounded font-semibold hover:bg-gray-100"
@@ -122,6 +145,7 @@ export default function PatientConsultation() {
                 <div className="border-t border-gray-200 bg-white p-6">
                     <form onSubmit={handleSend} className="max-w-2xl mx-auto flex gap-2">
                         <input
+                            ref={inputRef}
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
