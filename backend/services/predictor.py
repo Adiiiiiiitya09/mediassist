@@ -3,19 +3,24 @@ import json
 import numpy as np
 import pandas as pd
 from rapidfuzz import process, fuzz
+import os
+
+# Get the backend directory path
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ML_DIR = os.path.join(BASE_DIR, 'ml')
 
 # Load model and data
-with open('ml/extratrees_model.pkl', 'rb') as f:
+with open(os.path.join(ML_DIR, 'extratrees_model.pkl'), 'rb') as f:
     MODEL = pickle.load(f)
 
-with open('ml/label_encoder.pkl', 'rb') as f:
+with open(os.path.join(ML_DIR, 'label_encoder.pkl'), 'rb') as f:
     LE = pickle.load(f)
 
-with open('ml/symptom_list.json') as f:
+with open(os.path.join(ML_DIR, 'symptom_list.json')) as f:
     SYMPTOM_LIST = json.load(f)
 
-desc_df = pd.read_csv('ml/symptom_Description.csv')
-prec_df = pd.read_csv('ml/symptom_precaution.csv')
+desc_df = pd.read_csv(os.path.join(ML_DIR, 'symptom_Description.csv'))
+prec_df = pd.read_csv(os.path.join(ML_DIR, 'symptom_precaution.csv'))
 
 def map_to_vector(extracted_symptoms):
     vector = [0] * len(SYMPTOM_LIST)

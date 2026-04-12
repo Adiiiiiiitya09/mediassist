@@ -77,3 +77,4 @@ htmlcov/
 temp/
 tmp/
 *.tmp
+backend/*firebase-adminsdk*.json

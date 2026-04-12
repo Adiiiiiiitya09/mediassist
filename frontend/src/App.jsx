@@ -5,6 +5,7 @@ import PatientLogin from './pages/PatientLogin'
 import PatientConsultation from './pages/PatientConsultation'
 import DoctorLogin from './pages/DoctorLogin'
 import DoctorDashboard from './pages/DoctorDashboard'
+import PatientDashboard from './pages/PatientDashboard'
 
 function App() {
     return (
@@ -15,6 +16,7 @@ function App() {
                 <Route path="/patient/consultation" element={<PatientConsultation />} />
                 <Route path="/doctor-login" element={<DoctorLogin />} />
                 <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+                <Route path="/dashboard" element={<PatientDashboard />} />
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
         </BrowserRouter>

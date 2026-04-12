@@ -1,5 +1,27 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
+
+class PatientRegister(BaseModel):
+    firebase_uid: str
+    name: str
+    email: str
+    password: str = 'firebase'
+    role: str
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    blood_group: Optional[str] = None
+    height_cm: Optional[float] = None
+    weight_kg: Optional[float] = None
+    chronic_conditions: Optional[str] = None
+    past_surgeries: Optional[str] = None
+    current_medications: Optional[str] = None
+    known_allergies: Optional[str] = None
+    family_history: Optional[str] = None
+    smoking: Optional[str] = None
+    alcohol: Optional[str] = None
+    exercise: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
 
 class UserRegister(BaseModel):
     name: str
@@ -10,6 +32,7 @@ class UserRegister(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
+    firebase_token: Optional[str] = None
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -37,3 +60,32 @@ class DoctorApproval(BaseModel):
 
 class DoctorReject(BaseModel):
     notes: str
+
+class PatientProfileUpdate(BaseModel):
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    blood_group: Optional[str] = None
+    height_cm: Optional[float] = None
+    weight_kg: Optional[float] = None
+    chronic_conditions: Optional[str] = None
+    past_surgeries: Optional[str] = None
+    current_medications: Optional[str] = None
+    known_allergies: Optional[str] = None
+    family_history: Optional[str] = None
+    smoking: Optional[str] = None
+    alcohol: Optional[str] = None
+    exercise: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+
+class DoctorProfileUpdate(BaseModel):
+    specialization: Optional[str] = None
+    qualification: Optional[str] = None
+    experience_years: Optional[int] = None
+    license_number: Optional[str] = None
+    hospital: Optional[str] = None
+    department: Optional[str] = None
+    phone: Optional[str] = None
+    consultation_hours: Optional[str] = None
+    bio: Optional[str] = None
+    languages: Optional[str] = None

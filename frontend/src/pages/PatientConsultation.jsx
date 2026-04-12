@@ -11,14 +11,30 @@ export default function PatientConsultation() {
     const messagesEndRef = useRef(null)
 
     useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search)
+        const continueId = urlParams.get('continue')
+
         const startConsultation = async () => {
             try {
-                const response = await api.post('/consultation/start')
-                setConsultationId(response.data.consultation_id)
-                setMessages([{
-                    role: 'assistant',
-                    content: 'Hello! I\'m your medical intake assistant. I\'ll help gather information about your symptoms. Can you start by telling me what brings you in today?'
-                }])
+                if (continueId) {
+                    // Load existing consultation for reconsult
+                    setConsultationId(parseInt(continueId))
+                    // Load existing messages
+                    const historyResponse = await api.get(`/consultation/status/${continueId}`)
+                    // For reconsult, we start fresh but could load previous context if needed
+                    setMessages([{
+                        role: 'assistant',
+                        content: 'Welcome back! I see you\'re following up on a previous consultation. Let\'s update your symptoms and medical information. What changes have you noticed since your last visit?'
+                    }])
+                } else {
+                    // Start new consultation
+                    const response = await api.post('/consultation/start')
+                    setConsultationId(response.data.consultation_id)
+                    setMessages([{
+                        role: 'assistant',
+                        content: 'Hello! I\'m your medical intake assistant. I\'ll help gather information about your symptoms. Can you start by telling me what brings you in today?'
+                    }])
+                }
             } catch (err) {
                 console.error(err)
             }
@@ -63,7 +79,15 @@ export default function PatientConsultation() {
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             <div className="bg-blue-700 text-white p-4">
-                <h1 className="text-2xl font-bold">Patient Consultation</h1>
+                <div className="flex items-center justify-between">
+                    <h1 className="text-2xl font-bold">Patient Consultation</h1>
+                    <button
+                        onClick={() => window.location.href = '/dashboard'}
+                        className="bg-white text-blue-700 px-4 py-2 rounded font-semibold hover:bg-gray-100"
+                    >
+                        ← Back to Dashboard
+                    </button>
+                </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
