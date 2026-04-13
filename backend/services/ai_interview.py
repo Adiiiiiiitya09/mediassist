@@ -35,8 +35,8 @@ def get_ai_response(conversation_history):
     )
 
     reply = response.choices[0].message.content
-    is_complete = '[INTERVIEW_COMPLETE]' in reply
-    clean = reply.replace('[INTERVIEW_COMPLETE]', '').strip()
+    is_complete = '[INTERVIEW_COMPLETE]' in reply or '[INTERVIEW COMPLETE]' in reply
+    clean = reply.replace('[INTERVIEW_COMPLETE]', '').replace('[INTERVIEW COMPLETE]', '').strip()
 
     if is_complete:
         clean += '\n\nThank you for sharing all this information. A doctor will review your case shortly.'
