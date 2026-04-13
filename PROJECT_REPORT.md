@@ -43,7 +43,10 @@ graph TD
 Built using **React 18**, this layer handles user sessions and real-time feedback. It uses **Tailwind CSS** for a responsive, accessible design that works on mobile and desktop.
 
 ### 2. The Logic Layer (Backend)
-Powered by **FastAPI**, our backend is fast and efficient. It manages **JWT Authentication** to keep patient records secure and uses an **Asynchronous** structure to ensure the AI doesn't slow down the user experience.
+Powered by **FastAPI**, our backend is fast and efficient. It manages **JWT Authentication via Firebase** to keep patient records secure and uses an **Asynchronous** structure to ensure the AI doesn't slow down the user experience.
+
+### 3. Safety & Security (The Auth Barrier)
+Before any data is shared, the system verifies a unique **Firebase ID Token**. This ensures that only registered patients and verified doctors can access their respective sections of the app.
 
 ### 3. The Intelligence Layer (AI & ML)
 - **Claude API**: Handles natural language processing during patient interviews.
@@ -115,7 +118,17 @@ Our first model reached 100% accuracy on paper but was too "stiff" for real-worl
 
 ---
 
-## 🔒 Ethics & Privacy: Our Promise
+## 🔒 Security & Identity: The Firebase Hybrid Strategy
+
+In healthcare, data protection is paramount. MediAssist uses a state-of-the-art **Hybrid Security Model**:
+
+1.  **Identity via Firebase**: We use **Firebase Auth** as our primary Identity Provider. This means we never store user passwords locally, which eliminates a major security risk.
+2.  **JWT Token Verification**: Every request from the frontend includes a secure token. The backend uses the **Firebase Admin SDK** to verify these tokens in real-time before granting access.
+3.  **Local SQLite for Performance**: While we use Firebase for identity, we migrated all clinical data to a local **SQLite** database. This "Best-of-Both-Worlds" approach gives us the security of a global cloud provider (Firebase) with the speed and privacy of a local data store.
+
+---
+
+## 🛡️ Ethics & Privacy: Our Promise
 In healthcare, safety is the first priority.
 - **No Self-Diagnosis**: The system explicitly forbids the AI from telling patients what disease they might have. Only the doctor releases that information.
 - **Capped Confidence**: We never show "100% Certainty." We cap scores at 99% to remind everyone that the AI is an assistant, not a final authority.
