@@ -115,9 +115,18 @@ export default function PatientConsultation() {
 
             <div className="flex-1 overflow-y-auto p-6">
                 <div className="max-w-2xl mx-auto space-y-4">
-                    {messages.map((msg, idx) => (
-                        <ChatBubble key={idx} role={msg.role} content={msg.content} />
-                    ))}
+                    {messages
+                        .filter(msg => {
+                            // Hide messages that are only the INTERVIEW_COMPLETE tag
+                            const stripped = msg.content.replace(/[\[\]*]*\s*INTERVIEW[\s_]*COMPLETE\s*[\[\]*]*/gi, '').trim()
+                            return stripped.length > 0
+                        })
+                        .map((msg, idx) => {
+                            // Clean any leftover INTERVIEW_COMPLETE text from display
+                            const cleanContent = msg.content.replace(/[\[\]*]*\s*INTERVIEW[\s_]*COMPLETE\s*[\[\]*]*/gi, '').trim()
+                            return <ChatBubble key={idx} role={msg.role} content={cleanContent} />
+                        })
+                    }
 
                     {loading && (
                         <div className="flex justify-start">

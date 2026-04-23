@@ -49,6 +49,8 @@ async def send_message(body: MessageRequest, patient=Depends(require_patient), d
             raise HTTPException(status_code=404, detail='Consultation not found')
         if consult.patient_id != patient.id:
             raise HTTPException(status_code=403, detail='Forbidden')
+        if consult.interview_complete == 1:
+            raise HTTPException(status_code=400, detail='Interview already complete. No more messages allowed.')
 
         # Save patient message
         db.add(Message(consultation_id=consult.id, role='user', content=body.message))
@@ -65,22 +67,31 @@ async def send_message(body: MessageRequest, patient=Depends(require_patient), d
         db.add(Message(consultation_id=consult.id, role='assistant', content=reply))
         db.commit()
 
-        # If interview done: run scribe + ML, save report
+        # If interview done: mark complete first, then try scribe + ML
         if is_complete:
-            structured = extract_structured_data(history)
-            symptoms = [s['name'] for s in structured.get('symptoms', [])]
-            symptoms += structured.get('associated_symptoms', [])
-            prediction = predict(symptoms, structured.get('interview_quality', 'medium'))
-
-            db.add(Report(
-                consultation_id=consult.id,
-                structured_json=json.dumps(structured),
-                prediction_json=json.dumps(prediction),
-                confidence_score=prediction['score'],
-                confidence_tier=prediction['tier'],
-            ))
             consult.interview_complete = 1
             db.commit()
+
+            try:
+                structured = extract_structured_data(history)
+                prediction = predict(structured, structured.get('interview_quality', 'medium'))
+
+                db.add(Report(
+                    consultation_id=consult.id,
+                    structured_json=json.dumps(structured),
+                    prediction_json=json.dumps(prediction),
+                    confidence_score=prediction['score'],
+                    confidence_tier=prediction['tier'],
+                ))
+                db.commit()
+            except Exception as report_err:
+                logger.error(f"Report generation failed for consultation {consult.id}: {report_err}", exc_info=True)
+                # Still mark complete — the rescue_cases script or a retry can fill in the report later
+                db.rollback()
+                # Re-assert interview_complete since rollback may have reverted it
+                consult = db.query(Consultation).filter(Consultation.id == body.consultation_id).first()
+                consult.interview_complete = 1
+                db.commit()
 
         # ⚠️ NEVER return disease data to patient
         return {'reply': reply, 'is_complete': is_complete}

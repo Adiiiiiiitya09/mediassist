@@ -1,4 +1,5 @@
 import os
+import re
 from groq import Groq
 from dotenv import load_dotenv
 
@@ -35,10 +36,14 @@ def get_ai_response(conversation_history):
     )
 
     reply = response.choices[0].message.content
-    is_complete = '[INTERVIEW_COMPLETE]' in reply or '[INTERVIEW COMPLETE]' in reply
-    clean = reply.replace('[INTERVIEW_COMPLETE]', '').replace('[INTERVIEW COMPLETE]', '').strip()
+    is_complete = bool(re.search(r'INTERVIEW[\s_]*COMPLETE', reply, re.IGNORECASE))
+    # Strip all variations: [INTERVIEW_COMPLETE], **INTERVIEW COMPLETE**, etc.
+    clean = re.sub(r'[\[\]*]*\s*INTERVIEW[\s_]*COMPLETE\s*[\[\]*]*', '', reply, flags=re.IGNORECASE).strip()
 
     if is_complete:
-        clean += '\n\nThank you for sharing all this information. A doctor will review your case shortly.'
+        if not clean:
+            clean = 'Thank you for sharing all this information. A doctor will review your case shortly.'
+        else:
+            clean += '\n\nThank you for sharing all this information. A doctor will review your case shortly.'
 
     return clean, is_complete

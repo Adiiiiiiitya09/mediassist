@@ -8,14 +8,21 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 df = pd.read_csv('dataset.csv')
 sev = pd.read_csv('Symptom-severity.csv')
 
-# Clean whitespace
+# Clean whitespace — Fix Bug 1: collapse double underscores produced by
+# symptoms like " dischromic _patches" → "dischromic__patches" → "dischromic_patches"
 for col in df.columns:
-    df[col] = df[col].astype(str).str.strip().str.replace(' ', '_')
+    df[col] = (df[col].astype(str).str.strip()
+                       .str.replace(' ', '_')
+                       .str.replace(r'_+', '_', regex=True))
 
 df = df.replace('nan', np.nan)
 
 # Build deduplicated 131-symptom master list
-raw_syms = sev['Symptom'].str.strip().tolist()
+# Apply the same normalization to the severity file so names always match
+raw_syms = (sev['Symptom'].str.strip()
+                           .str.replace(' ', '_')
+                           .str.replace(r'_+', '_', regex=True)
+                           .tolist())
 seen = set()
 symptom_list = []
 
